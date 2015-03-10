@@ -36,6 +36,10 @@
              {
                 setTimeout(function() {window.history.back();}, 1000);
              }
+             function BackToUrl()
+             {
+                setTimeout(function() {window.location.href = '<?php echo home_url(); ?>/wp-login.php';}, 1000);
+             }
     </script>
 </head>
 <body>

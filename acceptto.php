@@ -14,11 +14,11 @@
 load_plugin_textdomain('acceptto', false, basename( dirname( __FILE__ ) ) . '/languages' );
 
 function acceptto_admin_menu(){
-	add_menu_page('Config', __('Acceptto', 'acceptto'), 'activate_plugins', 'conf', 'config_review');
+	add_menu_page('Config', __('Acceptto', 'acceptto'), 'activate_plugins', 'acceptto_conf', 'config_review');
     add_action( 'admin_init', 'register_mysettings' );
 }
 function acceptto_sub_menu(){
-	add_submenu_page('conf', 'Setting', __('Settings', 'acceptto'), 'activate_plugins', 'settings', 'acceptto_option');
+	add_submenu_page('acceptto_conf', 'Setting', __('Settings', 'acceptto'), 'activate_plugins', 'acceptto_settings', 'acceptto_option');
 }
 function register_mysettings() {
 	//register our settings
@@ -218,18 +218,24 @@ function acceptto_auth(){
 		}else{
 			$email = $_POST['email'];
 		}
-		$url = 'https://mfa.acceptto.com/api/v9/authenticate?message=WordPress+is+wishing+to+authorize&type=Login&email='.$email.'&uid='.get_option('acceptto_uid').'&secret='.get_option('acceptto_secret');
+		//$url = 'https://mfa.acceptto.com/api/v9/authenticate?message=WordPress+is+wishing+to+authorize&type=Login&email='.$email.'&uid='.get_option('acceptto_uid').'&secret='.get_option('acceptto_secret');
+		
+		$url = 'https://mfa.acceptto.com/api/v9/authenticate_with_options?message=WordPress+is+wishing+to+authorize&type=Login&email='.$email.'&uid='.get_option('acceptto_uid').'&secret='.get_option('acceptto_secret');
 		$data = json_decode(get_cUrl($url));
 		$channel = $data->{'channel'};
 		if($channel == ''){echo 'Please fill correct email address. url: '.$url;}else{
 		$_SESSION['channel'] = $channel;
 		$_SESSION['email'] = $email;
 		$new_url = 'https://mfa.acceptto.com/mfa/index?channel='.$channel.'&callback_url=http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&autoLlogin';
-		$data = get_cUrl($new_url);
+		wp_redirect($new_url);
+		//$data = get_cUrl($new_url);
 		echo '<style>.header{display:none;}</style>';
 		echo $data;
 		}
-		}elseif($_SESSION['email'] != '' && $_SESSION['channel'] != ''){
+		}elseif($_SESSION['email'] != '' && ($_SESSION['channel'] != '')){
+			if($_GET['channel'] != $_SESSION['channel']){
+				$_SESSION['channel'] = $_GET['channel'];
+			}
 			$url = 'https://mfa.acceptto.com/api/v9/check?channel='.$_SESSION['channel'].'&email='.$_SESSION['email'];
 			$data = json_decode(get_cUrl($url));
 			$status = $data->{'status'};
@@ -246,7 +252,6 @@ function acceptto_auth(){
 				if (!$user) {
 					$userdidnotexist = true;
 				}else{
-					
 					wp_set_auth_cookie($user->ID, false, '');
 				}
 				
@@ -259,12 +264,14 @@ function acceptto_auth(){
 							wp_redirect( home_url() ); exit;
 					 	break;
 					case 'rejected':
-					 		echo '<p>Sorry Your Milti-Factor authorization request declined.</p><script>BackMe();</script>';
-					 		unsetAll();
+					 		echo '<p>Sorry Your Milti-Factor authorization request declined.</p>';
+					 		unsetAll(); wp_logout();
+							echo '<script>BackToUrl();</script>';
 					 	break;
 					case 'expired':
-					 		echo '<p>Sorry Your Milti-Factor authorization request is expired.<script>BackMe();</script></p>';
-					 		unsetAll();
+					 		echo '<p>Sorry Your Milti-Factor authorization request is expired.</p>';
+					 		unsetAll(); wp_logout();
+							echo '<script>BackToUrl();</script>';
 					 	break;
 					 case '':
 					 		echo '<script>ReloadMe();</script>';
@@ -325,8 +332,10 @@ function two_validate(){
 		}else{
 			$user = wp_get_current_user();
 			if(get_user_meta($user->ID, 'acceptto_email', true) != ''){
-				include( plugin_dir_path(__FILE__).'/acceptto-auth.php' );
-				die;
+				if(get_option('acceptto_enable_mfa')){
+					include( plugin_dir_path(__FILE__).'/acceptto-auth.php' );
+					die;
+				}
 			}
 		}
 	}
