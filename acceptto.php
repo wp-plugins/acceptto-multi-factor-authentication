@@ -4,7 +4,7 @@
  * Plugin Name: Acceptto Multi Factor Authentication
  * Plugin URI: https://www.acceptto.com/
  * Description: Simple Multifactor Secure Login for WordPress
- * Version: 1.1
+ * Version: 1.2
  * Author: Acceptto
  * Author URI: https://www.acceptto.com
  * License: GPL3
