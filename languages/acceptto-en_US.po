@@ -1,0 +1,73 @@
+# This file is distributed under the same license as the Development package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2014-11-20 23:23:06+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/1.0-alpha-1000\n"
+"Project-Id-Version: Development\n"
+
+msgid "Acceptto Multi Factor Authentication"
+msgstr "Acceptto Multi Factor Authentication"
+
+msgid "Simple Multifactor Secure Login for WordPress"
+msgstr "Simple Multifactor Secure Login for WordPress"
+
+msgid "Acceptto"
+msgstr "Acceptto"
+
+msgid "About"
+msgstr "About"
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "API UId"
+msgstr "API UId"
+
+msgid "API Secret"
+msgstr "API Secret"
+
+msgid "Multi Factor Authentication"
+msgstr "Multi Factor Authentication"
+
+msgid "Enable"
+msgstr "Enable"
+
+msgid "Disable"
+msgstr "Disable"
+
+msgid "Acceptto Multi Factor Overview."
+msgstr "Acceptto Multi Factor Overview."
+
+msgid "What Is Two/Multi Factor Authentication?"
+msgstr "What Is Two/Multi Factor Authentication?"
+
+msgid "Two and Multi Factor Authentication in the world of computer authentication systems refer to , where the user is to present two or more independent pieces of information (something beyond the username and password) as means of authentication such as:"
+msgstr "Two and Multi Factor Authentication in the world of computer authentication systems refer to , where the user is to present two or more independent pieces of information (something beyond the username and password) as means of authentication such as:"
+
+msgid "- Something only the user knows (e.g. password, PIN, pattern)."
+msgstr "- Something only the user knows (e.g. password, PIN, pattern)."
+
+msgid "- Something only the user has (e.g. smart card, key fob, mobile phone)"
+msgstr "- Something only the user has (e.g. smart card, key fob, mobile phone)"
+
+msgid "- Something only the user has (e.g. biometric such as fingerprint, face or voice)"
+msgstr "- Something only the user has (e.g. biometric such as fingerprint, face or voice)"
+
+msgid "- Some unique contextual data associated with the user (e.g. location, known device token, known network, etc.)"
+msgstr "- Some unique contextual data associated with the user (e.g. location, known device token, known network, etc.)"
+
+msgid "Acceptto Endpoint Configuration"
+msgstr "Acceptto Endpoint Configuration (You can register <a href='https://acceptto.com/organisation_users/sign_up' target='_blank'>here</a> and define a new application in your dashboard.)"
+
+msgid "User's Acceptto Email Address For Multi Factor"
+msgstr "User's Acceptto Email Address For Multi Factor"
+
+msgid "Acceptto Email"
+msgstr "Acceptto Email"
+
+msgid "Please enter your acceptto's account email address."
+msgstr "Please enter your acceptto's account email address. Empty email address will disable multi factor authentication for this user."
