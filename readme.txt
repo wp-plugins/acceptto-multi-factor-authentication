@@ -3,7 +3,7 @@ Contributors: Acceptto
 Tags: two factor authentication, multi factor authentication, security
 Requires at least: 3.0.1
 Tested up to: 4.1.1
-Stable tag: 1.1
+Stable tag: 1.0
 License: GPLv3
 License URI: http://www.gnu.org/copyleft/gpl.html
 
@@ -29,9 +29,6 @@ Secure automated phone call delivered to any valid phone number, mobile or landl
 5. Go to Users page on Wordpress and Find and edit your own user's Acceptto email address field to match your account on Acceptto's mobile app.
 
 == Changelog ==
-
-= 1.1 =
-* Enabled Two Factor authorization with Phone call and SMS as well as Push Notification.
 
 = 1.0 =
 * Initial release of plugin.
