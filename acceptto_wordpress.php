@@ -56,6 +56,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         $ikey = acceptto_get_option('acceptto_ikey');
         $skey = acceptto_get_option('acceptto_skey');
         $host = acceptto_get_option('acceptto_host');
+        $user_acceptto_email = get_user_meta($user->ID, 'acceptto_email', true);
 
         if (is_user_logged_in()) {
             acceptto_debug_log('acceptto_sign_request: User is logged in.');
@@ -64,7 +65,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             acceptto_debug_log('acceptto_sign_request: User is not logged in!');
         }
 
-        $url = $host.'/api/v9/authenticate_with_options?message=WordPress+is+wishing+to+authorize&type=Login&email=mm.mani@icloud.com&uid='.$ikey.'&secret='.$skey;
+        $url = $host.'/api/v9/authenticate_with_options?message=WordPress+is+wishing+to+authorize&type=Login&email='.$user_acceptto_email.'&uid='.$ikey.'&secret='.$skey;
         $data = get_curl_url($url);
         $channel = $data->{'channel'};
         if($channel != '') {
@@ -268,6 +269,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         return $skey;
     }
 
+    function acceptto_host_validate($host) {
+        acceptto_debug_log("validate acceptto host ...");
+        $ikey = acceptto_get_option('acceptto_ikey');
+        $skey = acceptto_get_option('acceptto_skey');
+        $url = $host.'/api/v9/is_application_valid?&uid='.$ikey.'&secret='.$skey;
+        $data = get_curl_url($url);
+        $valid = $data->{'valid'};
+        if ($valid == 0) {
+            add_settings_error('acceptto_host', '', "<strong>ERROR</strong>: Invalid Acceptto UID, Secret, Host specified, please sign into your <a href='https://acceptto.com/organisations/application'>Acceptto Dashboard</a> and copy these values from there.");
+            return "";
+        }
+
+        return $host;
+    }
+
     function acceptto_add_site_option($option, $value = '') {
         // Add multisite option only if it doesn't exist already
         // With Wordpress versions < 3.3, calling add_site_option will override old values
@@ -298,7 +314,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             add_settings_field('acceptto_roles', 'Enable for roles:', 'acceptto_settings_roles', 'acceptto_settings', 'acceptto_settings');
             register_setting('acceptto_settings', 'acceptto_ikey', 'acceptto_ikey_validate');
             register_setting('acceptto_settings', 'acceptto_skey', 'acceptto_skey_validate');
-            register_setting('acceptto_settings', 'acceptto_host');
+            register_setting('acceptto_settings', 'acceptto_host', 'acceptto_host_validate');
             register_setting('acceptto_settings', 'acceptto_roles', 'acceptto_roles_validate');
         }
     }
@@ -315,28 +331,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             <tr><th>Roles</th><td><?php acceptto_settings_roles();?></td></tr>
         </table>
 <?php
-    }
-
-    function acceptto_update_mu_options() {
-        if(isset($_POST['acceptto_ikey'])) {
-            $ikey = $_POST['acceptto_ikey'];
-            $result = update_site_option('acceptto_ikey', $ikey);
-        }
-
-        if(isset($_POST['acceptto_skey'])) {
-            $skey = $_POST['acceptto_skey'];
-            $result = update_site_option('acceptto_skey', $skey);
-        }
-
-        if(isset($_POST['acceptto_host'])) {
-            $host = $_POST['acceptto_host'];
-            $result = update_site_option('acceptto_host', $host);
-        }
-
-        if(isset($_POST['acceptto_roles'])) {
-            $roles = $_POST['acceptto_roles'];
-            $result = update_site_option('acceptto_roles', $roles);
-        }
     }
 
     function acceptto_add_page() {
@@ -486,10 +480,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     }
 
     add_action( 'personal_options_update', 'acceptto_save_extra_user_profile_fields' );
+
+    add_action( 'user_profile_update_errors', 'validate_extra' );
+    function validate_extra(&$errors, $update = null, &$user  = null)
+    {
+        if ($_POST['acceptto_email'])
+        {
+            $ikey = acceptto_get_option('acceptto_ikey');
+            $skey = acceptto_get_option('acceptto_skey');
+            $host = acceptto_get_option('acceptto_host');
+            $url = $host.'/api/v9/is_user_valid?email='.$_POST['acceptto_email'].'&uid='.$ikey.'&secret='.$skey;
+            $data = get_curl_url($url);
+            $valid = $data->{'valid'};
+            if ($valid == 0) {
+                $errors->add('wrong_acceptto_email', "<strong>ERROR</strong>: Invalid Acceptto Email Address! Please use the email address you are signed in with on your Acceptto mobile application.");
+            }
+        }
+    }
+
     add_action( 'edit_user_profile_update', 'acceptto_save_extra_user_profile_fields' );
     function acceptto_save_extra_user_profile_fields( $user_id ) {
         if ( current_user_can( 'edit_user', $user_id ) ) {
-            update_user_meta( $user_id, 'acceptto_email', $_POST['acceptto_email'] );
+            update_user_meta($user_id, 'acceptto_email', $_POST['acceptto_email']);
         }
 
         return true;
