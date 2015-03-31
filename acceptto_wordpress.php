@@ -277,7 +277,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         $data = get_curl_url($url);
         $valid = $data->{'valid'};
         if ($valid == 0) {
-            add_settings_error('acceptto_host', '', "<strong>ERROR</strong>: Invalid Acceptto UID, Secret, Host specified, please sign into your <a href='https://acceptto.com/organisations/application'>Acceptto Dashboard</a> and copy these values from there.");
+            add_settings_error('acceptto_host', $host, "<strong>ERROR</strong>: Invalid Acceptto UID, Secret, Host specified, please sign into your <a href='https://acceptto.com/organisations/application'>Acceptto Dashboard</a> and copy these values from there.");
             return "";
         }
 
