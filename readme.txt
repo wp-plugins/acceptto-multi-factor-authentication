@@ -3,7 +3,7 @@ Contributors: Acceptto
 Tags: two factor authentication, multi factor authentication, security
 Requires at least: 3.0.1
 Tested up to: 4.1.1
-Stable tag: 1.2
+Stable tag: 1.5
 License: GPLv3
 License URI: http://www.gnu.org/copyleft/gpl.html
 
@@ -29,6 +29,15 @@ Secure automated phone call delivered to any valid phone number, mobile or landl
 5. Go to Users page on Wordpress and Find and edit your own user's Acceptto email address field to match your account on Acceptto's mobile app.
 
 == Changelog ==
+
+= 1.5 =
+* Validation for User's Acceptto email.
+
+= 1.4 =
+* Added support for redirects after login via Peter's Login Redirect (http://www.theblog.ca/wplogin-redirect)
+
+= 1.3 =
+* Bug Fixes
 
 = 1.2 =
 * Bug fixes

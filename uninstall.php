@@ -4,14 +4,16 @@ if ( !defined( 'WP_UNINSTALL_PLUGIN' ) )
         exit ();
     
     if (is_multisite()){
-        delete_site_option('acceptto_uid');
-        delete_site_option('acceptto_secret');
-        delete_site_option('acceptto_enable_mfa');
+        delete_site_option('acceptto_ikey');
+        delete_site_option('acceptto_skey');
+        delete_site_option('acceptto_host');
+        delete_site_option('acceptto_roles');
     }
     else {
-        delete_option('acceptto_uid');
-        delete_option('acceptto_secret');
-        delete_option('acceptto_enable_mfa');
+        delete_option('acceptto_ikey');
+        delete_option('acceptto_skey');
+        delete_option('acceptto_host');
+        delete_option('acceptto_roles');
     }
 
     $meta_type  = 'user';
