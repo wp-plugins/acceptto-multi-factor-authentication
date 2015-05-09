@@ -4,7 +4,7 @@
  * Plugin Name: Acceptto Multi Factor Authentication
  * Plugin URI: https://www.acceptto.com/
  * Description: Simple Multifactor Secure Login for WordPress
- * Version: 1.4
+ * Version: 1.5
  * Author: Acceptto
  * Author URI: https://www.acceptto.com
  * License: GPL3
@@ -29,6 +29,56 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 $AccepttoDebug = true;
+
+function add_message( $message, $type = '' ) {
+
+    // success is the default
+    if ( empty( $type ) )
+        $type = 'success';
+
+    // Send the values to the cookie for page reload display
+    @setcookie( 'wp-message',      $message, time() + 60 * 60 * 24, COOKIEPATH );
+    @setcookie( 'wp-message-type', $type,    time() + 60 * 60 * 24, COOKIEPATH );
+
+}
+
+
+function setup_message() {
+
+    if ( isset( $_COOKIE['wp-message'] ) )
+        $template_message = stripslashes( $_COOKIE['wp-message'] );
+
+    if ( isset( $_COOKIE['wp-message-type'] ) )
+        $template_message_type = stripslashes( $_COOKIE['wp-message-type'] );
+
+    add_action( 'template_notices', 'render_message' );
+
+    if ( isset( $_COOKIE['wp-message'] ) )
+        @setcookie( 'wp-message', false, time() - 1000, COOKIEPATH );
+    if ( isset( $_COOKIE['wp-message-type'] ) )
+        @setcookie( 'wp-message-type', false, time() - 1000, COOKIEPATH );
+}
+add_action( 'wp', 'setup_message', 5 );
+
+
+function render_message() {
+
+    if ( isset( $_COOKIE['wp-message'] ) ) {
+        $template_message = stripslashes( $_COOKIE['wp-message'] );
+
+        if ( ! empty( $template_message ) ) :
+            $type    = ( 'success' == stripslashes( $_COOKIE['wp-message-type'] ) ) ? 'updated' : 'error';
+            $content = apply_filters( 'render_message_content', stripslashes( $_COOKIE['wp-message'] ), $type ); ?>
+
+            <div id="message" class="template-message <?php echo $type; ?>">
+                <?php echo $content; ?>
+            </div>
+
+            <?php
+            do_action( 'render_message' );
+        endif;
+    }
+}
 
 function get_curl_url($url) {
     $ch = curl_init();
@@ -73,7 +123,20 @@ function acceptto_sign_request($user, $redirect) {
     $url = $host.'/api/v9/authenticate_with_options?message=WordPress+is+wishing+to+authorize&type=Login&email='.$user_acceptto_email.'&uid='.$ikey.'&secret='.$skey;
     $data = get_curl_url($url);
     $channel = $data->{'channel'};
-    if($channel != '') {
+
+    # if MFA webservice call failes for a reason and channel returned empty we login the user. for example in case provided email is not a valid acceptto email
+    if ($channel == '') {
+        wp_set_auth_cookie( $user->ID, false, '' );
+        include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+        $redirect_plugin_path = ABSPATH.'/wp-content/plugins/peters-login-redirect/wplogin_redirect_control.php';
+        if (file_exists($redirect_plugin_path)) {
+            wp_redirect(get_host_url().'/wp-content/plugins/peters-login-redirect/wplogin_redirect_control.php');
+        }
+        else {
+            wp_redirect( home_url() );
+        }
+    }
+    else {
         $_SESSION['channel'] = $channel;
         $_SESSION['user_id'] = $user->ID;
         $new_url = $host.'/mfa/index?channel='.$channel.'&callback_url='.get_host_url().'&redirect_url='.$redirect;
@@ -512,7 +575,7 @@ function acceptto_extra_user_profile_fields( $user ) {
 
 add_action( 'personal_options_update', 'acceptto_save_extra_user_profile_fields' );
 
-add_action( 'user_profile_update_errors', 'validate_extra' );
+add_action( 'user_profile_update_errors', 'validate_extra');
 function validate_extra(&$errors, $update = null, &$user  = null)
 {
     if ($_POST['acceptto_email'])
@@ -524,14 +587,32 @@ function validate_extra(&$errors, $update = null, &$user  = null)
         $data = get_curl_url($url);
         $valid = $data->{'valid'};
         if ($valid == 0) {
-            $errors->add('wrong_acceptto_email', "<strong>ERROR</strong>: Invalid Acceptto Email Address! Please use the email address you are signed in with on your Acceptto mobile application.");
+            $errors->add('acceptto_email_error', "<strong>ERROR</strong>: Invalid Acceptto Email Address! Please use the email address you are signed in with on your Acceptto mobile application.");
+            error_log('Returning false');
+            return false;
         }
+
+        return true;
     }
 }
 
 add_action( 'edit_user_profile_update', 'acceptto_save_extra_user_profile_fields' );
 function acceptto_save_extra_user_profile_fields( $user_id ) {
     if ( current_user_can( 'edit_user', $user_id ) ) {
+
+        if ($_POST['acceptto_email'])
+        {
+            $ikey = acceptto_get_option('acceptto_ikey');
+            $skey = acceptto_get_option('acceptto_skey');
+            $host = acceptto_get_option('acceptto_host');
+            $url = $host.'/api/v9/is_user_valid?email='.$_POST['acceptto_email'].'&uid='.$ikey.'&secret='.$skey;
+            $data = get_curl_url($url);
+            $valid = $data->{'valid'};
+            if ($valid == 0) {
+                return false;
+            }
+        }
+
         update_user_meta($user_id, 'acceptto_email', $_POST['acceptto_email']);
     }
 
